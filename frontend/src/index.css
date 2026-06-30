@@ -1,0 +1,75 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #f4f4f4;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.container {
+  width: 90%;
+  margin: auto;
+  padding: 20px;
+}
+
+.section {
+  background: white;
+  margin-top: 20px;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 8px rgba(0,0,0,0.1);
+}
+
+input,
+select,
+button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+}
+
+button {
+  background: #2563eb;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #1d4ed8;
+}
+
+.movie-card {
+  background: white;
+  padding: 15px;
+  margin-top: 15px;
+  border-radius: 8px;
+  border-left: 5px solid #2563eb;
+}
+
+.seat-grid {
+  display: grid;
+  grid-template-columns: repeat(20, 35px);
+  gap: 5px;
+  margin-top: 20px;
+}
+
+.seat {
+  width: 35px;
+  height: 35px;
+  background: #22c55e;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.booked {
+  background: red;
+}
+
+.selected {
+  background: orange;
+}
