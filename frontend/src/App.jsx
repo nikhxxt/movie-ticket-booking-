@@ -13,15 +13,10 @@ function App() {
 
       <div className="container">
         <AddMovie />
-
         <GenreFilter />
-
         <MovieList />
-
         <AddShowtime />
-
         <SeatGrid />
-
         <BookingForm />
       </div>
     </>
