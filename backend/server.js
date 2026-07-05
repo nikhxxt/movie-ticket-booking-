@@ -9,6 +9,7 @@ const connectDB = require("./config/db");
 const movieRoutes = require("./routes/movieRoutes");
 const showtimeRoutes = require("./routes/showtimeRoutes");
 const bookingRoutes = require("./routes/bookingRoutes");
+const authRoutes = require("./routes/authRoutes"); // <-- Added
 
 const app = express();
 
@@ -24,10 +25,21 @@ app.get("/", (req, res) => {
   res.send("🎬 Movie Ticket Booking API is Running...");
 });
 
-// API Routes
+// ================= API Routes =================
+
+// Authentication
+app.use("/api/auth", authRoutes);
+
+// Movies
 app.use("/api/movies", movieRoutes);
+
+// Showtimes
 app.use("/api/showtimes", showtimeRoutes);
+
+// Bookings
 app.use("/api/bookings", bookingRoutes);
+
+// ==============================================
 
 // Invalid Route
 app.use((req, res) => {
