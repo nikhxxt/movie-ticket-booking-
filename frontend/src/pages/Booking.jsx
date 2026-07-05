@@ -1,22 +1,58 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "../styles/Booking.css";
 
 function Booking({ setCurrentPage }) {
   const [selectedSeats, setSelectedSeats] = useState([]);
-  const [showtime, setShowtime] = useState("7:00 PM");
+  const [selectedMovie, setSelectedMovie] = useState(null);
+  const [totalPrice, setTotalPrice] = useState(0);
+
+  const SEAT_PRICE = 250;
+
+  useEffect(() => {
+    const movie = JSON.parse(localStorage.getItem("selectedMovie"));
+    setSelectedMovie(movie);
+  }, []);
 
   const rows = ["A", "B", "C", "D", "E", "F", "G", "H"];
-  const seatsPerRow = 10;
-  const bookedSeats = ["A5", "B3", "B4", "C1", "C2", "D5", "D6", "D7"];
+  const seatsPerRow = 12;
 
-  const toggleSeat = (seat) => {
-    if (bookedSeats.includes(seat)) return;
-    setSelectedSeats((prev) =>
-      prev.includes(seat) ? prev.filter((s) => s !== seat) : [...prev, seat]
-    );
+  const toggleSeat = (seatId) => {
+    setSelectedSeats((prev) => {
+      if (prev.includes(seatId)) {
+        return prev.filter((s) => s !== seatId);
+      } else {
+        return [...prev, seatId];
+      }
+    });
   };
 
-  const totalPrice = selectedSeats.length * 250;
+  useEffect(() => {
+    setTotalPrice(selectedSeats.length * SEAT_PRICE);
+  }, [selectedSeats]);
+
+  const bookedSeats = ["A3", "A4", "B5", "B6", "C2", "C7", "D1"];
+
+  const handleBooking = () => {
+    if (selectedSeats.length === 0) {
+      alert("Please select at least one seat");
+      return;
+    }
+
+    const booking = {
+      movie: selectedMovie,
+      seats: selectedSeats,
+      totalPrice: totalPrice,
+      bookingDate: new Date().toLocaleDateString(),
+      bookingId: `BK${Math.random().toString(36).substr(2, 9)}`,
+    };
+
+    let bookings = JSON.parse(localStorage.getItem("bookings")) || [];
+    bookings.push(booking);
+    localStorage.setItem("bookings", JSON.stringify(bookings));
+
+    alert("Booking successful! Your booking ID: " + booking.bookingId);
+    setCurrentPage("bookings");
+  };
 
   return (
     <div className="booking-page">
@@ -25,14 +61,17 @@ function Booking({ setCurrentPage }) {
       </button>
 
       <div className="booking-container">
-        <div className="booking-left">
-          <div className="booking-header">
-            <h1>Movie Name: Inception</h1>
-            <p>Showing: {showtime} | Hall 1</p>
-          </div>
+        <div className="seats-section">
+          <h2>Select Your Seats</h2>
+          {selectedMovie && (
+            <div className="movie-info-bar">
+              <span>{selectedMovie.title}</span>
+              <span>Showtime: {selectedMovie.selectedShowtime}</span>
+            </div>
+          )}
 
           <div className="screen">
-            <p>SCREEN</p>
+            <p>🎬 SCREEN 🎬</p>
           </div>
 
           <div className="seats-grid">
@@ -50,7 +89,7 @@ function Booking({ setCurrentPage }) {
                       className={`seat ${isBooked ? "booked" : ""} ${
                         isSelected ? "selected" : ""
                       }`}
-                      onClick={() => toggleSeat(seatId)}
+                      onClick={() => !isBooked && toggleSeat(seatId)}
                       disabled={isBooked}
                       title={seatId}
                     >
@@ -65,77 +104,66 @@ function Booking({ setCurrentPage }) {
 
           <div className="seat-legend">
             <div className="legend-item">
-              <div className="seat-icon available"></div>
+              <div className="seat available"></div>
               <span>Available</span>
             </div>
             <div className="legend-item">
-              <div className="seat-icon selected"></div>
+              <div className="seat selected"></div>
               <span>Selected</span>
             </div>
             <div className="legend-item">
-              <div className="seat-icon booked"></div>
+              <div className="seat booked"></div>
               <span>Booked</span>
             </div>
           </div>
         </div>
 
-        <div className="booking-summary">
+        <div className="summary-section">
           <div className="summary-card">
-            <h2>Booking Summary</h2>
+            <h3>Booking Summary</h3>
+            {selectedMovie && (
+              <>
+                <div className="summary-item">
+                  <span>Movie:</span>
+                  <span className="value">{selectedMovie.title}</span>
+                </div>
+                <div className="summary-item">
+                  <span>Showtime:</span>
+                  <span className="value">{selectedMovie.selectedShowtime}</span>
+                </div>
+              </>
+            )}
 
-            <div className="summary-section">
-              <label>Movie:</label>
-              <p>Inception</p>
+            <div className="summary-item">
+              <span>Selected Seats:</span>
+              <span className="value seats-display">
+                {selectedSeats.length > 0 ? selectedSeats.join(", ") : "None"}
+              </span>
             </div>
 
-            <div className="summary-section">
-              <label>Date & Time:</label>
-              <p>Today, {showtime}</p>
+            <div className="summary-item">
+              <span>Number of Seats:</span>
+              <span className="value">{selectedSeats.length}</span>
             </div>
 
-            <div className="summary-section">
-              <label>Selected Seats:</label>
-              <p className="selected-seats">
-                {selectedSeats.length > 0 ? selectedSeats.join(", ") : "No seats selected"}
-              </p>
+            <div className="price-per-seat">
+              <span>Price per Seat:</span>
+              <span className="value">₹{SEAT_PRICE}</span>
             </div>
 
-            <div className="summary-section">
-              <label>Number of Seats:</label>
-              <p>{selectedSeats.length}</p>
-            </div>
+            <hr />
 
-            <div className="price-breakdown">
-              <div className="price-row">
-                <span>Ticket Price ({selectedSeats.length} × ₹250)</span>
-                <span>₹{selectedSeats.length * 250}</span>
-              </div>
-              <div className="price-row">
-                <span>Convenience Fee</span>
-                <span>₹50</span>
-              </div>
-              <div className="price-row total">
-                <span>Total Amount</span>
-                <span>₹{selectedSeats.length * 250 + 50}</span>
-              </div>
+            <div className="summary-item total">
+              <span>Total Price:</span>
+              <span className="value">₹{totalPrice}</span>
             </div>
 
             <button
-              className="proceed-btn"
+              className={`book-btn ${selectedSeats.length === 0 ? "disabled" : ""}`}
+              onClick={handleBooking}
               disabled={selectedSeats.length === 0}
-              onClick={() => setCurrentPage("payment")}
             >
-              Proceed to Payment
-            </button>
-
-            <button
-              className="cancel-btn"
-              onClick={() => {
-                setSelectedSeats([]);
-                setCurrentPage("movies");
-              }}
-            >
-              Cancel
+              Confirm Booking
             </button>
           </div>
         </div>

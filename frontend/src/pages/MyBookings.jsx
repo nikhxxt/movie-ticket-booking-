@@ -1,91 +1,122 @@
+import { useState, useEffect } from "react";
 import "../styles/MyBookings.css";
 
 function MyBookings({ setCurrentPage }) {
-  const bookings = [
-    {
-      id: 1,
-      movie: "Inception",
-      date: "2025-01-15",
-      time: "7:00 PM",
-      seats: ["A5", "A6"],
-      status: "Confirmed",
-      amount: 500,
-    },
-    {
-      id: 2,
-      movie: "The Dark Knight",
-      date: "2025-01-20",
-      time: "9:30 PM",
-      seats: ["B3", "B4", "B5"],
-      status: "Confirmed",
-      amount: 750,
-    },
-    {
-      id: 3,
-      movie: "Interstellar",
-      date: "2025-01-10",
-      time: "5:30 PM",
-      seats: ["C1", "C2"],
-      status: "Completed",
-      amount: 500,
-    },
-  ];
+  const [bookings, setBookings] = useState([]);
+  const [expandedBooking, setExpandedBooking] = useState(null);
+
+  useEffect(() => {
+    const storedBookings = JSON.parse(localStorage.getItem("bookings")) || [];
+    setBookings(storedBookings);
+  }, []);
+
+  const handleCancel = (bookingId) => {
+    if (window.confirm("Are you sure you want to cancel this booking?")) {
+      const updatedBookings = bookings.filter((b) => b.bookingId !== bookingId);
+      setBookings(updatedBookings);
+      localStorage.setItem("bookings", JSON.stringify(updatedBookings));
+      alert("Booking cancelled successfully");
+    }
+  };
+
+  const toggleExpand = (bookingId) => {
+    setExpandedBooking(expandedBooking === bookingId ? null : bookingId);
+  };
 
   return (
     <div className="my-bookings">
-      <div className="bookings-header">
+      <button className="back-btn" onClick={() => setCurrentPage("home")}>
+        ← Back to Home
+      </button>
+
+      <div className="bookings-container">
         <h1>My Bookings</h1>
-        <button className="back-btn" onClick={() => setCurrentPage("home")}>
-          ← Back to Home
-        </button>
-      </div>
 
-      {bookings.length > 0 ? (
-        <div className="bookings-list">
-          {bookings.map((booking) => (
-            <div key={booking.id} className="booking-card">
-              <div className="booking-left">
-                <div className="movie-icon">🎬</div>
-                <div className="booking-details">
-                  <h2>{booking.movie}</h2>
-                  <p className="booking-date">
-                    📅 {new Date(booking.date).toLocaleDateString()}
-                  </p>
-                  <p className="booking-time">⏱️ {booking.time}</p>
-                  <p className="booking-seats">
-                    🎫 Seats: {booking.seats.join(", ")}
-                  </p>
-                </div>
-              </div>
-
-              <div className="booking-right">
-                <span className={`status ${booking.status.toLowerCase()}`}>
-                  {booking.status}
-                </span>
-                <div className="booking-amount">₹{booking.amount}</div>
-                <div className="booking-actions">
-                  <button className="action-btn">View Ticket</button>
-                  {booking.status === "Confirmed" && (
-                    <button className="action-btn cancel">Cancel Booking</button>
-                  )}
-                </div>
-              </div>
+        {bookings.length === 0 ? (
+          <div className="no-bookings">
+            <div className="empty-state">
+              <div className="empty-icon">🎬</div>
+              <h2>No Bookings Yet</h2>
+              <p>You haven't booked any movies yet</p>
+              <button
+                className="explore-btn"
+                onClick={() => setCurrentPage("movies")}
+              >
+                Explore Movies
+              </button>
             </div>
-          ))}
-        </div>
-      ) : (
-        <div className="no-bookings">
-          <div className="empty-icon">🎫</div>
-          <h2>No Bookings Yet</h2>
-          <p>You haven't booked any movies yet.</p>
-          <button
-            className="book-btn"
-            onClick={() => setCurrentPage("movies")}
-          >
-            Book a Movie
-          </button>
-        </div>
-      )}
+          </div>
+        ) : (
+          <div className="bookings-list">
+            {bookings.map((booking) => (
+              <div key={booking.bookingId} className="booking-card">
+                <div className="booking-header">
+                  <div className="booking-movie-info">
+                    <div className="booking-poster">{booking.movie.poster}</div>
+                    <div className="booking-details">
+                      <h3>{booking.movie.title}</h3>
+                      <p className="booking-time">
+                        🕐 {booking.movie.selectedShowtime}
+                      </p>
+                      <p className="booking-date">📅 {booking.bookingDate}</p>
+                    </div>
+                  </div>
+                  <div className="booking-status">
+                    <div className="status-badge confirmed">✓ Confirmed</div>
+                    <p className="booking-id">ID: {booking.bookingId}</p>
+                  </div>
+                </div>
+
+                <div
+                  className={`booking-content ${
+                    expandedBooking === booking.bookingId ? "expanded" : ""
+                  }`}
+                >
+                  <div className="booking-seats">
+                    <h4>Seats Booked:</h4>
+                    <div className="seats-list">
+                      {booking.seats.map((seat, idx) => (
+                        <span key={idx} className="seat-tag">
+                          {seat}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="booking-price">
+                    <span>Total Amount:</span>
+                    <span className="amount">₹{booking.totalPrice}</span>
+                  </div>
+
+                  <div className="booking-actions">
+                    <button
+                      className="action-btn ticket-btn"
+                      onClick={() => {
+                        alert("Ticket details for " + booking.bookingId);
+                      }}
+                    >
+                      View Ticket
+                    </button>
+                    <button
+                      className="action-btn cancel-btn"
+                      onClick={() => handleCancel(booking.bookingId)}
+                    >
+                      Cancel Booking
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  className="expand-btn"
+                  onClick={() => toggleExpand(booking.bookingId)}
+                >
+                  {expandedBooking === booking.bookingId ? "−" : "+"}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
